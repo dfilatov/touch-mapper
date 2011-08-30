@@ -6,17 +6,17 @@
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
  *
- * @version 0.0.1
+ * @version 0.0.2
  */
 
 (function($) {
 
 var userAgent = navigator.userAgent.toLowerCase(),
-    isTouchScreen =
+    hasTouchScreen =
         ($.browser.webkit && userAgent.indexOf('mobile') > -1) ||
         ($.browser.opera && userAgent.indexOf('opera mobi') > -1) ||
         userAgent.indexOf('android') > -1 ||
-        userAgent.indexOf('dolfin') > -1 && userAgent.indexOf('mobile') > -1,
+        (userAgent.indexOf('dolfin') > -1 && userAgent.indexOf('mobile')) > -1,
     options = {
         contextMenuTimeout : 400,
         dblClickTimeout    : 500
@@ -24,7 +24,7 @@ var userAgent = navigator.userAgent.toLowerCase(),
     special = $.event.special,
     mouseEvents = ['mouseenter', 'mousemove', 'mousedown', 'mouseup', 'mouseleave', 'contextmenu', 'click', 'dblclick'];
 
-isTouchScreen && $.each(mouseEvents, function(i, e) {
+hasTouchScreen && $.each(mouseEvents, function(i, e) {
     special[e] = {
 
         setup : function() {
@@ -83,8 +83,7 @@ function onTouchStart(e) {
     }
 
     // Если поставлен второй палец
-    if (origE.touches.length > 1 && !state.isMulti) {
-        // запоминаем начальное расстояние
+    if(origE.touches.length > 1 && !state.isMulti) {
         state.isMulti = true;
     }
 
@@ -100,15 +99,13 @@ function onTouchMove(e) {
 
     // move шлется только если палец один
     if(origE.touches.length == 1) {
-        // В норме started должен быть true, но возможны ситуации, когда
+        // В норме isStarted должен быть true, но возможны ситуации, когда
         // touch-и начали слушать после touchstart-а.
         state.isStarted || onTouchStart(e);
         state.isMoved || (state.isMoved = true);
         triggerTouchEvent(e, 'mousemove', elem);
     }
     else {
-        // вообще multitouch уже должен быть выставлен, но возможны ситуации, когда
-        // touch-и начали слушать после touchstart-а.
         state.isMulti = true;
     }
 
@@ -126,7 +123,7 @@ function onTouchEnd(e) {
         // Если был мультитач или движение, то никаких кликов быть не должно
         if(!state.isMulti && !state.isMoved) {
             // Если прошло больше contextMenuTimeout времени, значит это ContextMenu
-            if (e.timeStamp - state.initTouch.timeStamp > options.contextMenuTimeout) {
+            if(e.timeStamp - state.initTouch.timeStamp > options.contextMenuTimeout) {
                 triggerTouchEvent(touchE, 'contextmenu', elem);
                 state.lastClickTimeStamp = null;
             }
